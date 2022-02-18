@@ -7,14 +7,19 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.aqua.snapask.data.GithubUser
+import com.aqua.snapask.databinding.Item2Binding
 import com.aqua.snapask.databinding.ItemBinding
 import com.bumptech.glide.Glide
 
-class UserAdapter() : ListAdapter<GithubUser, UserAdapter.UserViewHolder>(DiffCallback) {
+const val TYPE_ONE = 0
+const val TYPE_TWO = 1
+
+class UserAdapter() : ListAdapter<GithubUser, RecyclerView.ViewHolder>(DiffCallback) {
 
     class UserViewHolder(var binding: ItemBinding): RecyclerView.ViewHolder(binding.root) {
-        fun bind() {
-        }
+    }
+
+    class UserViewHolder2(var binding: Item2Binding): RecyclerView.ViewHolder(binding.root) {
     }
 
     companion object DiffCallback : DiffUtil.ItemCallback<GithubUser>() {
@@ -27,19 +32,38 @@ class UserAdapter() : ListAdapter<GithubUser, UserAdapter.UserViewHolder>(DiffCa
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
-        return UserViewHolder(ItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when(viewType) {
+            TYPE_ONE -> UserViewHolder(ItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            else -> UserViewHolder2(Item2Binding.inflate(LayoutInflater.from(parent.context), parent, false))
+        }
     }
 
-    override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val user = getItem(position)
 
-        holder.binding.itemText.text = user.login
-        Glide
-            .with(holder.binding.root)
-            .load(user.avatar_url.toUri())
-            .into(holder.binding.image)
+        when(holder) {
+            is UserViewHolder -> {
+                holder.binding.itemText.text = user.login
+                Glide
+                    .with(holder.binding.root)
+                    .load(user.avatar_url.toUri())
+                    .into(holder.binding.image)
+            }
+            is UserViewHolder2 -> {
+                holder.binding.itemText.text = user.login
+                Glide
+                    .with(holder.binding.root)
+                    .load(user.avatar_url.toUri())
+                    .into(holder.binding.image)
+            }
+        }
+    }
 
-        holder.bind()
+    override fun getItemViewType(position: Int): Int {
+        return when (position % 2) {
+            0 -> TYPE_ONE
+            else -> TYPE_TWO
+        }
     }
 }
